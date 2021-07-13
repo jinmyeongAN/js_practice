@@ -5,20 +5,9 @@ const todoList = document.querySelector("#todolist");
 //make an array for update the todo list from new input
 let todoUpdated = [];
 
-//save the previous data on localStorage into todoUpdated list
-function todoPrevious(todoUpdated){
-    if(localStorage.getItem("inputs")){
-        todoUpdated = JSON.parse(localStorage.getItem("inputs"));
-    }
-}
-
 //save the element of list
-function todoSaved(input){
-    //updated from previous localStorage
-    todoPrevious(todoUpdated)
+function todoSaved(){
     //save input on the browser
-
-    todoUpdated.push(input);
     //save the list of inputs as a string using stringifying
     localStorage.setItem("inputs",JSON.stringify(todoUpdated));
 }
@@ -27,16 +16,22 @@ function todoSaved(input){
 function todoDelete(event){
     const li = event.target.parentElement;
     li.remove()
+    //remove the element of array with target id
+    todoUpdated = todoUpdated.filter((element) => element.id !== parseInt(li.id)); // type is different
+    //save to browser
+    todoSaved();
 }
 //make a new tag list on the browser
-function todoPaint(input){
+function todoPaint(inputObj){
     //We should make the li tag in the existing ul tag
     const li = document.createElement("li");
     const span = document.createElement("span");
     //make a button
     const button = document.createElement("button");
-    span.innerText = input;
+    span.innerText = inputObj.value;
     button.innerText = "X";
+    //put id into li tag
+    li.id = inputObj.id;
     //Also I'm going to add span tag in the li tag
     li.appendChild(span);
     todoList.appendChild(li);
@@ -50,13 +45,20 @@ function todoSubmit(event){
     event.preventDefault();
     const input = todoInput.value;
     todoInput.value = "";
-    todoSaved(input);
-    todoPaint(input);
+    //make the element into object with value and id
+    const inputObj = {id: Date.now(), value: input}
+    todoUpdated.push(inputObj);
+    todoSaved();
+    todoPaint(inputObj);
 }
 
 todoForm.addEventListener("submit", todoSubmit);
 
+//For Refresh 
+const savedDos = localStorage.getItem("inputs")
 //Execute the todoPaint here, because when I update the page, it will be excuted
-const savedTodoList = JSON.parse(localStorage.getItem("inputs"));
-console.log(savedTodoList);
-todoUpdated.forEach(todoPaint);
+if (savedDos){
+    //todoUpdated array updated using previous data
+    todoUpdated = JSON.parse(savedDos);
+    todoUpdated.forEach(todoPaint);
+}
